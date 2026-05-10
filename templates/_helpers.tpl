@@ -185,51 +185,23 @@ app: "{{ template "harbor.name" . }}"
   {{- end }}
 {{- end -}}
 
-
-{{- define "harbor.redis.usernamefromsecret" -}}
-  {{- $existingSecret := (lookup "v1" "Secret"  .Release.Namespace (.Values.redis.external.existingSecret)) -}}
-  {{- if and (not (empty $existingSecret)) (hasKey $existingSecret.data "REDIS_USERNAME") -}}
-    {{- printf "%s" ($existingSecret.data.REDIS_USERNAME | b64dec | trim ) }}
+{{- define "harbor.redis.useExistingSecret" -}}
+  {{- if and (eq .Values.redis.type "external") (not (empty .Values.redis.external.existingSecret)) -}}
+    {{- printf "true" -}}
   {{- end -}}
 {{- end -}}
 
-{{- define "harbor.redis.usernameForRegistry" -}}
-  {{- with .Values.redis }}
-    {{- if eq .type "internal" }}
-      {{- "" -}}
-    {{- else if .external.existingSecret }}
-      {{- include "harbor.redis.usernamefromsecret" $ | trim -}}
-    {{- else }}
-      {{- .external.username | default "" -}}
-    {{- end }}
-  {{- end }}
-{{- end -}}
-
-{{- define "harbor.redis.pwdfromsecret" -}}
-  {{- $existingSecret := (lookup "v1" "Secret" .Release.Namespace (.Values.redis.external.existingSecret)) -}}
-  {{- if and (not (empty $existingSecret)) (hasKey $existingSecret.data "REDIS_PASSWORD") -}}
-    {{- printf "%s" ($existingSecret.data.REDIS_PASSWORD | b64dec | trim) -}}
+{{- define "harbor.redis.assertNotSentinelWithSecret" -}}
+  {{- if and (include "harbor.redis.useExistingSecret" .) .Values.redis.external.sentinelMasterSet -}}
+    {{- fail "redis.external.existingSecret is not yet supported with sentinelMasterSet (TODO). Use sentinel without existingSecret, or pre-render URLs in the ExternalSecret as redis+sentinel://..." -}}
   {{- end -}}
 {{- end -}}
 
-{{- define "harbor.redis.passwordForRegistry" -}}
-  {{- with .Values.redis }}
-    {{- if eq .type "internal" }}
-      {{- "" -}}
-    {{- else if .external.existingSecret }}
-      {{- include "harbor.redis.pwdfromsecret" $ -}}
-    {{- else }}
-      {{- .external.password | default "" -}}
-    {{- end }}
-  {{- end }}
-{{- end -}}
 
 {{- define "harbor.redis.cred" -}}
   {{- with .Values.redis }}
-    {{- if (and (eq .type "external" ) (.external.existingSecret)) }}
-      {{- printf "%s:%s@" ((include "harbor.redis.usernamefromsecret" $) | urlquery) ((include "harbor.redis.pwdfromsecret" $) | urlquery) -}}
-    {{- else }}
-      {{- ternary (printf "%s:%s@" (.external.username | urlquery) (.external.password | urlquery)) "" (and (eq .type "external" ) (not (not .external.password))) }}
+    {{- if and (eq .type "external") .external.password -}}
+      {{- printf "%s:%s@" (.external.username | default "" | urlquery) (.external.password | urlquery) -}}
     {{- end }}
   {{- end }}
 {{- end -}}

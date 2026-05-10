@@ -100,6 +100,13 @@ spec:
               name: {{ .Values.existingSecretAdminPassword }}
               key: {{ .Values.existingSecretAdminPasswordKey }}
         {{- end }}
+        {{- if (include "harbor.redis.useExistingSecret" .) }}
+        - name: HARBOR_REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: _REDIS_URL_JOBSERVICE
+        {{- end }}
         {{- with .Values.exporter.extraEnvVars }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

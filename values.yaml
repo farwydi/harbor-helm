@@ -1211,7 +1211,27 @@ redis:
     # username field can be an empty string, and it will be authenticated against the default user
     username: ""
     password: ""
-    # If using existingSecret, the key must be REDIS_PASSWORD, if ACL mode enabled, also inlcudes data of username, the keys must be REDIS_USERNAME
+    # If using existingSecret, the chart reads Redis credentials at pod runtime
+    # via secretKeyRef — no Helm `lookup` is called, so this works with
+    # `helm template` / ArgoCD / SealedSecrets / ESO.
+    #
+    # When existingSecret is set:
+    # - external.username / external.password are IGNORED
+    # - The Secret MUST contain the following keys:
+    #     _REDIS_URL_CORE        — redis://[user:pass@]host:port/0?idle_timeout_seconds=30
+    #     _REDIS_URL_JOBSERVICE  — redis://[user:pass@]host:port/1
+    #     _REDIS_URL_REG         — redis://[user:pass@]host:port/2?idle_timeout_seconds=30
+    #     _REDIS_URL_TRIVY       — redis://[user:pass@]host:port/5?idle_timeout_seconds=30  (if trivy.enabled)
+    #     _REDIS_URL_HARBOR      — optional, only if external.harborDatabaseIndex is set
+    #     _REDIS_URL_CACHE_LAYER — optional, only if external.cacheLayerDatabaseIndex is set
+    #     REDIS_ADDR             — host:port (used by registry as REGISTRY_REDIS_ADDR)
+    #     REDIS_USERNAME         — username (optional, ACL mode)
+    #     REDIS_PASSWORD         — raw password (used by registry as REGISTRY_REDIS_PASSWORD)
+    # - Password inside _REDIS_URL_* values must be URL-encoded by the secret
+    #   producer (e.g. ESO `urlquery` / sprig `urlquery`).
+    #   Special chars that MUST be encoded: @ : / | %
+    # - sentinelMasterSet with existingSecret is NOT yet supported
+    #   (chart will fail with a clear error).
     existingSecret: ""
   ## Additional deployment annotations
   podAnnotations: {}

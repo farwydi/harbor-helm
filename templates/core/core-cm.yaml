@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
+{{ include "harbor.redis.assertNotSentinelWithSecret" . -}}
 data:
   app.conf: |+
     appname = Harbor
@@ -34,6 +35,7 @@ data:
   LOG_LEVEL: "{{ .Values.logLevel }}"
   CONFIG_PATH: "/etc/core/app.conf"
   CHART_CACHE_DRIVER: "redis"
+  {{- if not (include "harbor.redis.useExistingSecret" .) }}
   _REDIS_URL_CORE: "{{ template "harbor.redis.urlForCore" . }}"
   _REDIS_URL_REG: "{{ template "harbor.redis.urlForRegistry" . }}"
   {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.harborDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.harborDatabaseIndex) }}
@@ -41,7 +43,8 @@ data:
   {{- end }}
   {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.cacheLayerDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.cacheLayerDatabaseIndex) }}
   _REDIS_URL_CACHE_LAYER: "{{ template "harbor.redis.urlForCache" . }}"
-  {{- end }}  
+  {{- end }}
+  {{- end }}
   PORTAL_URL: "{{ template "harbor.portalURL" . }}"
   REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"

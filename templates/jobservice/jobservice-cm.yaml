@@ -19,7 +19,11 @@ data:
       workers: {{ .Values.jobservice.maxJobWorkers }}
       backend: "redis"
       redis_pool:
+        {{- if (include "harbor.redis.useExistingSecret" .) }}
+        redis_url: "__REDIS_URL_JOBSERVICE__"
+        {{- else }}
         redis_url: "{{ template "harbor.redis.urlForJobservice" . }}"
+        {{- end }}
         namespace: "harbor_job_service_namespace"
         idle_timeout_second: 3600
     job_loggers:

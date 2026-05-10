@@ -122,6 +122,23 @@ spec:
             - name: SCANNER_API_SERVER_TLS_CERTIFICATE
               value: /etc/harbor/ssl/trivy/tls.crt
             {{- end }}
+            {{- if (include "harbor.redis.useExistingSecret" .) }}
+            - name: "SCANNER_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.external.existingSecret }}
+                  key: _REDIS_URL_TRIVY
+            - name: "SCANNER_STORE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.external.existingSecret }}
+                  key: _REDIS_URL_TRIVY
+            - name: "SCANNER_JOB_QUEUE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.external.existingSecret }}
+                  key: _REDIS_URL_TRIVY
+            {{- else }}
             - name: "SCANNER_REDIS_URL"
               valueFrom:
                 secretKeyRef:
@@ -137,6 +154,7 @@ spec:
                 secretKeyRef:
                   name: {{ template "harbor.trivy" . }}
                   key: redisURL
+            {{- end }}
 {{- with .Values.trivy.extraEnvVars }}
 {{- toYaml . | nindent 12 }}
 {{- end }}

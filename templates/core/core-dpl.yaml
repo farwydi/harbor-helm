@@ -156,6 +156,32 @@ spec:
                 name: {{ .Values.core.existingXsrfSecret }}
                 key: {{ .Values.core.existingXsrfSecretKey }}
           {{- end }}
+          {{- if (include "harbor.redis.useExistingSecret" .) }}
+          - name: _REDIS_URL_CORE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redis.external.existingSecret }}
+                key: _REDIS_URL_CORE
+          - name: _REDIS_URL_REG
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redis.external.existingSecret }}
+                key: _REDIS_URL_REG
+          {{- if .Values.redis.external.harborDatabaseIndex }}
+          - name: _REDIS_URL_HARBOR
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redis.external.existingSecret }}
+                key: _REDIS_URL_HARBOR
+          {{- end }}
+          {{- if .Values.redis.external.cacheLayerDatabaseIndex }}
+          - name: _REDIS_URL_CACHE_LAYER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redis.external.existingSecret }}
+                key: _REDIS_URL_CACHE_LAYER
+          {{- end }}
+          {{- end }}
 {{- with .Values.core.extraEnvVars }}
 {{- toYaml . | nindent 10 }}
 {{- end }}

@@ -169,6 +169,24 @@ spec:
               key: REGISTRY_STORAGE_OSS_ACCESSKEYSECRET
               optional: true
         {{- end}}
+        {{- if (include "harbor.redis.useExistingSecret" .) }}
+        - name: REGISTRY_REDIS_ADDR
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_ADDR
+        - name: REGISTRY_REDIS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_USERNAME
+              optional: true
+        - name: REGISTRY_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_PASSWORD
+        {{- end }}
 {{- with .Values.registry.registry.extraEnvVars }}
 {{- toYaml . | nindent 8 }}
 {{- end }}
@@ -324,6 +342,24 @@ spec:
               key: REGISTRY_STORAGE_OSS_ACCESSKEYSECRET
               optional: true
         {{- end}}
+        {{- if (include "harbor.redis.useExistingSecret" .) }}
+        - name: REGISTRY_REDIS_ADDR
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_ADDR
+        - name: REGISTRY_REDIS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_USERNAME
+              optional: true
+        - name: REGISTRY_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_PASSWORD
+        {{- end }}
 {{- with .Values.registry.controller.extraEnvVars }}
 {{- toYaml . | nindent 8 }}
 {{- end }}
