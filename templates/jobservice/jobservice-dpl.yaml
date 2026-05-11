@@ -140,8 +140,10 @@ spec:
             value: /etc/harbor/ssl/jobservice/tls.key
           - name: INTERNAL_TLS_CERT_PATH
             value: /etc/harbor/ssl/jobservice/tls.crt
+          {{- if or (eq .Values.internalTLS.certSource "auto") .Values.internalTLS.trustCa }}
           - name: INTERNAL_TLS_TRUST_CA_PATH
             value: /etc/harbor/ssl/jobservice/ca.crt
+          {{- end }}
           {{- end }}
           {{- if .Values.registry.credentials.existingSecret }}
           - name: REGISTRY_CREDENTIAL_PASSWORD

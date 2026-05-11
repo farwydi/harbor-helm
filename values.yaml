@@ -299,7 +299,12 @@ internalTLS:
   # 2) "manual" need provide cert file manually in following value
   # 3) "secret" internal certificates from secret
   certSource: "auto"
-  # The content of trust ca, only available when `certSource` is "manual"
+  # DNS suffix appended to service names in internal URLs.
+  # e.g. hostSuffix: "cluster.farwydi.dev" → test-harbor-core.cluster.farwydi.dev
+  # Useful with wildcard LE certs. Leave empty to use bare K8s service names.
+  hostSuffix: ""
+  # The content of trust ca, only available when `certSource` is "manual".
+  # Leave empty for public CAs (e.g. Let's Encrypt) — system trust store is used.
   trustCa: ""
   # core related cert configuration
   core:

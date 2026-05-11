@@ -132,8 +132,10 @@ spec:
             value: /etc/harbor/ssl/core/tls.key
           - name: INTERNAL_TLS_CERT_PATH
             value: /etc/harbor/ssl/core/tls.crt
+          {{- if or (eq .Values.internalTLS.certSource "auto") .Values.internalTLS.trustCa }}
           - name: INTERNAL_TLS_TRUST_CA_PATH
             value: /etc/harbor/ssl/core/ca.crt
+          {{- end }}
           {{- end }}
           {{- if .Values.database.external.existingSecret }}
           - name: POSTGRESQL_PASSWORD
